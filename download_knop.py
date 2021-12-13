@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
 import re, os, shutil
 
+# DOCSTRING
 """
 This script is designed to be a webscraper specifically for the AIP site of Amsterdam.
 Fetch all DMS files from a batch.
@@ -39,7 +40,7 @@ path = os.path.join(folder, batch_name)
 
 #TODO: check if folder name already exists
 
-
+#TODO: add headless download
 # set chrome options
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--no-sandbox')

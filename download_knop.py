@@ -6,6 +6,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
 import re, os, shutil
+# import locally
+from test_environment.extra_input import url, hyperlink_base
 
 # DOCSTRING
 """
@@ -32,7 +34,7 @@ user = input("User email to login to AIP system: ")
 password = input("Password to login to AIP system: ")
 batch = input("Enter batch number: ")
 folder = input("Input directory for batch destination: ")
-driver_url = "https://aip.amsterdam.nl"
+driver_url = url
 
 # create batch folder 
 batch_name = "Batch " + str(batch)
@@ -200,7 +202,7 @@ for bru in regex_tables:
 
     # download all data
     for file in regex_hyperlinks:
-        base = "https://bmidms.amsterdam.nl/documents/download/document/"
+        base = hyperlink_base
         total_link = os.path.join(base, file) 
 
         # get file

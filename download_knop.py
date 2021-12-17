@@ -7,8 +7,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
 from datetime import datetime
 import re, os, shutil
-# import locally
-from test_environment.extra_input import url, hyperlink_base
 
 # DOCSTRING
 """

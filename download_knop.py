@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
+from datetime import datetime
 import re, os, shutil
 # import locally
 from test_environment.extra_input import url, hyperlink_base
@@ -29,27 +30,48 @@ Default browser and version:    Chrome 95
 Default driver:                 chromedriver.exe
 """
 
+# start timing
+start_time = datetime.now()
+
 # ask for login as input and batch number
 user = input("User email to login to AIP system: ")
 password = input("Password to login to AIP system: ")
 batch = input("Enter batch number: ")
 folder = input("Input directory for batch destination: ")
-driver_url = url
+driver_url = "https://aip.amsterdam.nl"
 
-# create batch folder 
-batch_name = "Batch " + str(batch)
-path = os.path.join(folder, batch_name)
+#TODO: add function to select single bru instead of full batch
+# # single download or total download
+# choose_options = input("Do you want to download the whole batch?: (Y/N)\n")
+# if choose_options.upper() == "Y":
+#     single_download = False
+# elif choose_options.upper() == "N":
+#     single_download = True
+# else:
+#     print("Input option was incorrect, restart program.")
+#     exit()
 
-#TODO: check if folder name already exists
+# # create batch folder
+# if single_download:
+#     single_bru = input("Input full objectnumber: ")
+#     single_bru = single_bru.lower()
+# else:
+# check and create batch folder 
+for file in os.listdir(folder):
+    batch_name = "Batch " + str(batch)
+    if batch_name in file:
+        print("\nA file with the requested batch number already exists. Please remove.\n")
+        exit()
+    else:
+        path = os.path.join(folder, batch_name)
 
-#TODO: add headless download
 # set chrome options
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--window-size=1366,768')
-# chrome_options.add_argument('--headless')
-# chrome_options.add_argument('--disable-gpu')
-# chrome_options.add_argument('--start-maximized')
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--disable-gpu')
+chrome_options.add_argument('--start-maximized')
 chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 # add directory preference
 prefs = {}
@@ -68,7 +90,7 @@ driver.get(driver_url)
 def find_by_id(elem_id, webdriver):
     # explicit wait for browser to load
     try:
-        WebDriverWait(webdriver, 10).until(
+        WebDriverWait(webdriver, 15).until(
             EC.presence_of_all_elements_located((By.ID, elem_id))
         )
     except:
@@ -80,7 +102,7 @@ def find_by_id(elem_id, webdriver):
 
 def find_by_xpath(elem_xpath, webdriver):
     try:
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 25).until(
             EC.presence_of_all_elements_located((By.XPATH, elem_xpath))
         )
     except:
@@ -94,7 +116,7 @@ def find_by_xpath(elem_xpath, webdriver):
 def find_by_class_name(elem_class_name, webdriver):
     # explicit wait
     try:
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 15).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, elem_class_name))
         )
     except:
@@ -108,7 +130,7 @@ def find_by_class_name(elem_class_name, webdriver):
 def wait_for_class_name(elem_class_name):
     # explicit wait
     try:
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 15).until(
             EC.presence_of_element_located((By.CLASS_NAME, elem_class_name))
         )
     except:
@@ -170,7 +192,6 @@ for bru in regex_tables:
     bru_info_tag = "//tbody/tr[" + str(count) + "]/td[1]"
     bru_data = find_by_xpath(bru_info_tag, driver)
     bru_data.click()
-    count += 1
     
     # assign one window
     window_one = driver.window_handles[0]
@@ -190,13 +211,12 @@ for bru in regex_tables:
     select_all.click()
 
     #TODO: remove sleep() and make a better solution
-    sleep(2)
+    sleep(3)
 
     # fetch page html content and find all hyperlinks with regex
     html_content = driver.page_source
     regex_code = 'href="/documents/download/document/(.*?)"'
     regex_hyperlinks = re.findall(regex_code, str(html_content))
-    print(len(regex_hyperlinks))
 
     # make folder for each bru in batch directory
     path_bru = os.path.join(path, bru)
@@ -204,7 +224,7 @@ for bru in regex_tables:
 
     # download all data
     for file in regex_hyperlinks:
-        base = hyperlink_base
+        base = "https://bmidms.amsterdam.nl/documents/download/document/"
         total_link = os.path.join(base, file) 
 
         # get file
@@ -234,10 +254,15 @@ for bru in regex_tables:
 
     #go back one
     driver.back()
+    print("(" + str(count) + "/" + str(len(regex_tables)) + "): " + "From " + str(batch_name) + " and object " + str(bru) + " there where " + str(len(regex_hyperlinks)) + " files downloaded.")
+    count += 1
 
 # delete user login data
 del user
 del password
+print("Downloading has completed, and it took this long:")
+print(datetime.now() - start_time)
+print("you can close this terminal now.")
 
 # quit and shut down driver
 driver.quit()

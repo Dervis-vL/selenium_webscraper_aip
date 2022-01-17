@@ -45,7 +45,7 @@ batch = input("Enter batch number: ")
 folder = input("Input directory for batch destination: ")
 driver_url = "https://aip.amsterdam.nl"
 
-#TODO: add function to select single bru instead of full batch
+# add function to select single bru instead of full batch
 # single download or total download
 choose_options = input("Do you want to download the whole batch?: (Y/N)\n")
 if choose_options.upper() == "Y":
@@ -284,16 +284,18 @@ def single_data(regex_tables, driver):
     # get input that specifies wich bru to find
     input_test = True
     while input_test:
-        specific_bru = input("\nInput the integer number from list to select object: ")
+        specific_bru = input("\nInput the integer number from list to select object: \n")
+
+        try:
+            specific_bru = int(specific_bru)
+        except:
+            print("ERROR: Please input an integer value. An integer is a whole number without decimals.\n")
 
         # check input
-        try:
-            if type(specific_bru) == int:
-                input_test = False
-            else:
-                print("\nInput is not recognized, specify the number from the object as listed above.")
-        except:
-            print("ERROR with the input. Try again and specify the number from the object as listed above.")
+        if isinstance(specific_bru, int):
+            input_test = False
+        else:
+            print("\nInput is not recognized, specify the number from the object as listed above.")
 
     # go to specific bru info page
     bru_info_tag = "//tbody/tr[" + str(specific_bru) + "]/td[1]"
@@ -375,9 +377,10 @@ elif single_download == True:
 # delete user login data
 del user
 del password
-print("Downloading has completed, and it took this long:")
+print("\nDownloading has completed, and it took this long:")
 print(datetime.now() - start_time)
-print("you can close this terminal now.")
+print("\n!__you can close this terminal now__!\n")
+print("ლ ( ◕  ᗜ  ◕ ) ლ\n")
 
 # quit and shut down driver
 driver.quit()

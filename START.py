@@ -47,7 +47,7 @@ driver_url = "https://aip.amsterdam.nl"
 
 # add function to select single bru instead of full batch
 # single download or total download
-choose_options = input("Do you want to download the whole batch?: (Y/N)\n")
+choose_options = input("Do you want to download the whole batch? (Y/N): ")
 if choose_options.upper() == "Y":
     single_download = False
 elif choose_options.upper() == "N":
@@ -134,7 +134,7 @@ def find_by_class_name(elem_class_name, webdriver):
 def wait_for_class_name(elem_class_name):
     # explicit wait
     try:
-        WebDriverWait(driver, 15).until(
+        WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, elem_class_name))
         )
     except:
@@ -284,7 +284,7 @@ def single_data(regex_tables, driver):
     # get input that specifies wich bru to find
     input_test = True
     while input_test:
-        specific_bru = input("\nInput the integer number from list to select object: \n")
+        specific_bru = input("\nInput the integer number from list to select object: ")
 
         try:
             specific_bru = int(specific_bru)

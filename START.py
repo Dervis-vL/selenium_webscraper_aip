@@ -53,7 +53,11 @@ driver_url = "https://aip.amsterdam.nl"
 # if single_download:
 #     single_bru = input("Input full objectnumber: ")
 #     single_bru = single_bru.lower()
+    # single_download_func(single_bru)
 # else:
+#     full_batch_download_func()
+
+
 # check and create batch folder 
 for file in os.listdir(folder):
     batch_name = "Batch " + str(batch)

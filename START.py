@@ -75,7 +75,7 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--window-size=1366,768')
 # chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
-chrome_options.add_argument('--start-maximized')
+# chrome_options.add_argument('--start-maximized')
 chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 # add directory preference
 prefs = {}
@@ -94,7 +94,7 @@ driver.get(driver_url)
 def find_by_id(elem_id, webdriver):
     # explicit wait for browser to load
     try:
-        WebDriverWait(webdriver, 15).until(
+        WebDriverWait(webdriver, 30).until(
             EC.presence_of_all_elements_located((By.ID, elem_id))
         )
     except:
@@ -106,7 +106,7 @@ def find_by_id(elem_id, webdriver):
 
 def find_by_xpath(elem_xpath, webdriver):
     try:
-        WebDriverWait(driver, 25).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_all_elements_located((By.XPATH, elem_xpath))
         )
     except:
@@ -120,7 +120,7 @@ def find_by_xpath(elem_xpath, webdriver):
 def find_by_class_name(elem_class_name, webdriver):
     # explicit wait
     try:
-        WebDriverWait(driver, 15).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, elem_class_name))
         )
     except:
@@ -134,7 +134,7 @@ def find_by_class_name(elem_class_name, webdriver):
 def wait_for_class_name(elem_class_name):
     # explicit wait
     try:
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, elem_class_name))
         )
     except:
@@ -187,7 +187,7 @@ if len(regex_tables) == 0:
         """)
     exit()
 
-# function tp loop through all bru's and collect data
+# function to loop through all bru's and collect data
 def all_data(regex_tables, driver):
     count = 1
     for bru in regex_tables:
@@ -216,7 +216,7 @@ def all_data(regex_tables, driver):
         select_all.click()
 
         #TODO: remove sleep() and make a better solution
-        sleep(3)
+        sleep(4)
 
         # fetch page html content and find all hyperlinks with regex
         html_content = driver.page_source
@@ -263,11 +263,15 @@ def all_data(regex_tables, driver):
         # print update on download progress
         print("(" + str(count) + "/" + str(len(regex_tables)) + "): " + "From " + str(batch_name) + " and object " + str(bru) + " there where " + str(len(regex_hyperlinks)) + " files downloaded.")
         count += 1
+        break
 
+    print("Test step 1")
     #TODO: download 'Excel report'
     excel_export_tag = '//*[@id="objectlist"]/div[1]/div/a[2]'
     excel_report = find_by_xpath(excel_export_tag, driver)
+    sleep(2)
     excel_report.click()
+    print("test step 2")
 
 # function to get single bru from aip site
 def single_data(regex_tables, driver):

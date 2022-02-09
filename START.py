@@ -52,9 +52,14 @@ if choose_options.upper() == "Y":
     single_download = False
 elif choose_options.upper() == "N":
     single_download = True
+    print("/nWait 30 seconds for batch info to be retrieved.")
 else:
     print("Input option was incorrect, restart program.")
     exit()
+
+# ad a zero in front of the first 9 numbers to prevent an accidental hit with it's tenfold
+if len(batch) < 2:
+    batch = "0" + str(batch)
 
 # check and create batch folder with error handeling for duplicates
 dupl = 0
@@ -73,9 +78,9 @@ path = os.path.join(folder, batch_name)
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--window-size=1366,768')
-# chrome_options.add_argument('--headless')
+chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
-# chrome_options.add_argument('--start-maximized')
+chrome_options.add_argument('--start-maximized')
 chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 # add directory preference
 prefs = {}
@@ -257,21 +262,36 @@ def all_data(regex_tables, driver):
         #assign window_one
         driver.switch_to.window(window_one)
 
-        #go back one
+        # go back one
         driver.back()
 
         # print update on download progress
         print("(" + str(count) + "/" + str(len(regex_tables)) + "): " + "From " + str(batch_name) + " and object " + str(bru) + " there where " + str(len(regex_hyperlinks)) + " files downloaded.")
         count += 1
-        break
-
-    print("Test step 1")
-    #TODO: download 'Excel report'
-    excel_export_tag = '//*[@id="objectlist"]/div[1]/div/a[2]'
-    excel_report = find_by_xpath(excel_export_tag, driver)
+        
+    #download 'Excel report'
     sleep(2)
-    excel_report.click()
-    print("test step 2")
+    # fetch page html content and find all hyperlinks with regex
+    html_content_excel = driver.page_source
+    regex_code_excel = '(?<=batches\/)(.*)(?=\/batchExcel)'
+    regex_hyperlink = re.search(regex_code_excel, str(html_content_excel))
+
+    base_excel = "https://aip.amsterdam.nl/api/batches/"
+    end_excel = "batchExcel"
+    # parse the hit on regex to only get numbered code
+    parse_regex = regex_hyperlink.group().split("/")[-1]
+    total_link_excel = os.path.join(base_excel, str(parse_regex) + "/", end_excel) 
+
+    driver.get(total_link_excel)
+    sleep(4)
+
+    # wait till downloads ready
+    download_check = os.listdir(path)
+    
+    while any(".crdownload" in file for file in download_check):
+        sleep(1)
+        download_check = os.listdir(path)
+
 
 # function to get single bru from aip site
 def single_data(regex_tables, driver):
@@ -381,7 +401,7 @@ elif single_download == True:
 # delete user login data
 del user
 del password
-print("\nDownloading has completed, and it took this long:")
+print("\nDownloading has completed, see downloading time:")
 print(datetime.now() - start_time)
 print("\n!__you can close this terminal now__!\n")
 print("ლ ( ◕  ᗜ  ◕ ) ლ\n")

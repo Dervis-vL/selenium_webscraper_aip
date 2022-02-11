@@ -4,6 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
 from time import sleep
 from datetime import datetime, date
 import re, os, shutil
@@ -92,31 +93,30 @@ chrome_options.add_experimental_option("prefs", prefs)
 # VERSION control
 # connect to driver with selenium and check version
 try:
-    PATH = 'drivers//chromedriver_94.exe'
-    driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+    PATH = Service('drivers//chromedriver_94.exe')
+    driver = webdriver.Chrome(service=PATH, options=chrome_options)
 except:
     try:
-        PATH = 'drivers//chromedriver_95.exe'
-        driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+        PATH = Service('drivers//chromedriver_95.exe')
+        driver = webdriver.Chrome(service=PATH, options=chrome_options)
     except:
         try:
-            PATH = 'drivers//chromedriver_96.exe'
-            driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+            PATH = Service('drivers//chromedriver_96.exe')
+            driver = webdriver.Chrome(service=PATH, options=chrome_options)
         except:
             try:
-                PATH = 'drivers//chromedriver_97.exe'
-                driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+                PATH = Service('drivers//chromedriver_97.exe')
+                driver = webdriver.Chrome(service=PATH, options=chrome_options)
             except:
                 try:
-                    PATH = 'drivers//chromedriver_98.exe'
-                    driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+                    PATH = Service('drivers//chromedriver_98.exe')
+                    driver = webdriver.Chrome(service=PATH, options=chrome_options)
                 except:
                     try:
-                        PATH = 'drivers//chromedriver_99.exe'
-                        driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+                        PATH = Service('drivers//chromedriver_99.exe')
+                        driver = webdriver.Chrome(service=PATH, options=chrome_options)
                     except:
                         print("Your version of chrome is not found. Contact developer.")
-
 
 # connect to site
 driver.get(driver_url)

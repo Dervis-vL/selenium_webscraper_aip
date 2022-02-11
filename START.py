@@ -21,18 +21,18 @@ Fetch all DMS files from a batch.
     output: DMS files per object in a batch
 
 NOTE:
-check the webdriver version before running this script. 
-Make sure the driver has the same name and version as the browser of the user.
+When a error because of the webdriver version occurs make sure to check which version is on the machine.
+If the version is not included to the versions mentioned bellow, add it to the drivers folder.
+After your version of the chromedriver is added, change the 'if' statement in the code under
+the 'VERSION' comment.
 
-Default browser and version:    Chrome; version 95
-Default driver:                 chromedriver.exe (for version 95)
+Default browser and version:    Chrome; versions 94 till 99
+Default driver:                 chromedriver.exe (for versions 94 till 99)
 
 Check your browser version: 'help' -->  'About Google Chrome'
 
 If the version differs from the default version used by this tool, than download the driver for the verion used by your machine here:
 https://chromedriver.chromium.org/downloads
-
-Replace the driver with the correct chromedriver.exe in the driver folder
 """
 
 # start timing
@@ -52,7 +52,7 @@ if choose_options.upper() == "Y":
     single_download = False
 elif choose_options.upper() == "N":
     single_download = True
-    print("/nWait 30 seconds for batch info to be retrieved.")
+    print("\nWait 30 seconds for batch info to be retrieved.")
 else:
     print("Input option was incorrect, restart program.")
     exit()
@@ -89,9 +89,36 @@ prefs["profile.default_content_settings.popups"]=0
 prefs["download.default_directory"]=path
 chrome_options.add_experimental_option("prefs", prefs)
 
-# connect to driver with selenium
-PATH = 'driver//chromedriver.exe'
-driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+# VERSION control
+# connect to driver with selenium and check version
+try:
+    PATH = 'drivers//chromedriver_94.exe'
+    driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+except:
+    try:
+        PATH = 'drivers//chromedriver_95.exe'
+        driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+    except:
+        try:
+            PATH = 'drivers//chromedriver_96.exe'
+            driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+        except:
+            try:
+                PATH = 'drivers//chromedriver_97.exe'
+                driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+            except:
+                try:
+                    PATH = 'drivers//chromedriver_98.exe'
+                    driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+                except:
+                    try:
+                        PATH = 'drivers//chromedriver_99.exe'
+                        driver = webdriver.Chrome(executable_path=PATH, options=chrome_options)
+                    except:
+                        print("Your version of chrome is not found. Contact developer.")
+
+
+# connect to site
 driver.get(driver_url)
 
 ## functions

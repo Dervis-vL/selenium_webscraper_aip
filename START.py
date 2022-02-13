@@ -7,7 +7,14 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from time import sleep
 from datetime import datetime, date
-import re, os, shutil
+import re, os, shutil, sys
+# import win32com.shell.shell as shell
+# ASADMIN = 'asadmin'
+
+# if sys.argv[-1] != ASADMIN:
+#     script = os.path.abspath(sys.argv[0])
+#     params = ' '.join([script] + sys.argv[1:] + [ASADMIN])
+#     shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters=params)
 
 # DOCSTRING
 """
@@ -117,6 +124,8 @@ except:
                         driver = webdriver.Chrome(service=PATH, options=chrome_options)
                     except:
                         print("Your version of chrome is not found. Contact developer.")
+                        sleep(10)
+                        exit()
 
 # connect to site
 driver.get(driver_url)

@@ -2,9 +2,11 @@ from email import message
 from tkinter import *
 from tkinter import font
 from tkinter import messagebox
+from tkinter import filedialog
 from turtle import width
 from PIL import ImageTk, Image
 from PIL import ImageTk, Image
+from codebase import scraper
 
 # set root window image and icon
 ico_path = r"design\iv_plain_3.ico"
@@ -33,8 +35,8 @@ frame_two = LabelFrame(root, text="Download info", padx=20, pady=5)
 frame_two.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky=W+E)
 frame_two.config(font=("Arial", 11))
 
-frame_three = LabelFrame(root, text="Download whole batch", padx=20, pady=5)
-frame_three.grid(row=3, column=0, columnspan=3, padx=10, pady=10, sticky=W+E)
+frame_three = LabelFrame(root, text="Download", padx=20, pady=5)
+frame_three.grid(row=4, column=0, columnspan=3, padx=10, pady=10, sticky=W+E)
 frame_three.config(font=("Arial", 11))
 
 # functions for entry boxes
@@ -82,6 +84,13 @@ def on_focusout_dest(event):
         dest_entry.insert(0, 'enter destination')
         dest_entry.config(fg='grey')
 
+# opens dialog box to manually select the destination
+def dialog_box():
+    root.folder = filedialog.askdirectory(initialdir=r"c:\Users", title="Select directory")
+    dest_entry.delete(0, "end")
+    dest_entry.insert(0, root.folder)
+    dest_entry.config(fg='black')
+
 # Entry boxes with label
 user_entry = Entry(frame_one, width=52)
 user_entry.grid(row=0, column=1, padx=20, pady=(10, 0))
@@ -92,7 +101,7 @@ user_entry.config(fg="grey")
 user_label = Label(frame_one, text="Username: ")
 user_label.grid(row=0, column=0, pady=(10, 0), sticky=E)
 
-password_entry = Entry(frame_one, width=52)
+password_entry = Entry(frame_one, width=52, show="*")
 password_entry.grid(row=1, column=1, padx=20, pady=(10, 0))
 password_entry.insert(0, "enter password")
 password_entry.bind('<FocusIn>', on_entry_click_password)
@@ -120,7 +129,7 @@ dest_label = Label(frame_two, text="Destination: ")
 dest_label.grid(row=1, column=0, pady=(10, 10), sticky=E)
 
 # options for radio nutton
-all_download = ["Yes", "No"]
+all_download = ["Whole batch", "Single object"]
 
 # radio button
 action = IntVar()
@@ -132,6 +141,8 @@ radio_2.grid(row=1, column=0, sticky=W)
 
 # funcions for download button
 def download_click():
+    ready = False
+
     # first check of input
     if "@" not in user_entry.get( ):
         messagebox.showwarning("Oops", "Incorrect e-mail adres")
@@ -143,14 +154,73 @@ def download_click():
         messagebox.showwarning("Oops", "Select full or single download option")
     else:
         try:
-            if int(batch_entry.get()) == 999:
+            if int(batch_entry.get()) >= 999:
                 messagebox.showwarning("Oops", "Incorrect batch number")
+            else:
+                ready = True
         except:
             messagebox.showwarning("Oops", "Input batch number not an integer")
+    
+    # test is positive; run tool
+    if ready:
+        username = user_entry.get()
+        password = password_entry.get()
+        batch = batch_entry.get()
+        directory = dest_entry.get()
+        download = action.get()
 
+        # pass input data through scraper
+        selenium_options = scraper.input_scraper(batch, directory)
+
+        # find correct driver
+        driver = scraper.version_find(selenium_options[0])
+
+        # check for notifications
+        if driver[1] == False:
+            messagebox.showwarning("Oops", "Your version of chrome is not found. Contact developer.")
+        else:
+            driver[0].get(selenium_options[1])
+
+            brus_found = scraper.login(username, password, driver[0], selenium_options[3])
+
+            if len(brus_found) == 0:
+                messagebox.showwarning("Oops", "Loading objects failed. Try again.")
+                driver[0].quit()
+            else:
+                if download == 1:
+                    scraper.all_data(brus_found, driver[0])
+                else:
+                    bru_level = Toplevel()
+                    bru_level.title("Select object")
+                    bru_level.iconbitmap(ico_path)
+
+                    bru_label = Label(bru_level, text="Select object for download:", justify=LEFT)
+                    bru_label.grid(row=0, column=0, padx=8, pady=(10, 5), sticky=W)
+                    bru_label.config(font=("Arial", 11))
+
+                    count = 0
+                    bru_select = StringVar()
+                    bru_select.set(brus_found[0])
+                    for bru in brus_found:
+                        Radiobutton(bru_level, text=bru, variable=bru_select, value=bru).grid(row=count+1, column=0, sticky=W, padx=(80, 50))
+                        count += 1
+                    
+                    def single_click():
+                        # scraper.single_data(brus_found, driver[0])
+                        print(bru_select.get())
+
+                    single_btn = Button(bru_level, text="CONFIRM", command=single_click, padx=10, pady=5)
+                    single_btn.grid(row=len(brus_found)+2, column=0, columnspan=3, pady=(4, 10))
+
+
+
+        # close interface when ready
+        # root.destroy
 
 # buttons
+dest_btn = Button(root, text="Select destination", command=dialog_box, borderwidth=3)
+dest_btn.grid(row=3, column=0, columnspan=3, pady=(0, 15))
 download_btn = Button(root, text="DOWNLOAD", command=download_click, padx=10, pady=5)
-download_btn.grid(row=4, column=0, columnspan=3, pady=(0, 10))
+download_btn.grid(row=5, column=0, columnspan=3, pady=(0, 10))
 
 root.mainloop()

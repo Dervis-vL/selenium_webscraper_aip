@@ -1,3 +1,4 @@
+from datetime import datetime
 from email import message
 from tkinter import *
 from tkinter import font
@@ -7,6 +8,11 @@ from turtle import width
 from PIL import ImageTk, Image
 from PIL import ImageTk, Image
 from codebase import scraper
+
+# TODO: remove after testing/debugging
+name_test = "h.p.j.h.p.m.kolen@iv-infra.nl"
+pass_test = "7aB3E38rp!"
+
 
 # set root window image and icon
 ico_path = r"design\iv_plain_3.ico"
@@ -163,6 +169,8 @@ def download_click():
     
     # test is positive; run tool
     if ready:
+        # url to get with driver
+        url = "https://aip.amsterdam.nl"
         username = user_entry.get()
         password = password_entry.get()
         batch = batch_entry.get()
@@ -179,16 +187,31 @@ def download_click():
         if driver[1] == False:
             messagebox.showwarning("Oops", "Your version of chrome is not found. Contact developer.")
         else:
-            driver[0].get(selenium_options[1])
+            driver[0].get(url)
 
-            brus_found = scraper.login(username, password, driver[0], selenium_options[3])
+            brus_found = scraper.login(username, password, driver[0], selenium_options[2])
 
             if len(brus_found) == 0:
                 messagebox.showwarning("Oops", "Loading objects failed. Try again.")
                 driver[0].quit()
             else:
                 if download == 1:
-                    scraper.all_data(brus_found, driver[0])
+                    total = scraper.all_data(brus_found, driver[0], selenium_options[3], selenium_options[4])
+                    
+                    progress = Toplevel()
+                    progress.title("Progress window")
+                    progress.iconbitmap(ico_path)
+                    # progress_text = "(" + str(count_loop) + "/" + str(len(brus_found)) + "): " + "From " + str(selenium_options[4]) + " and object " + str(bru_select.get().rstrip()) + " there were " + str(len(brus_found)) + " files downloaded."
+                    # progress_bru = Label(progress, text=progress_text, justify=LEFT)
+                    # progress_bru.grid(row=1, column=0, padx=8, pady=(5, 5), sticky=W)
+                    progress_compl = Label(progress, text="Download has completed, see downloading time:", justify=LEFT)
+                    progress_compl.grid(row=2, column=0, padx=8, pady=(5, 5), sticky=W)
+                    progress_time = Label(progress, text=total, justify=LEFT)
+                    progress_time.grid(row=3, column=0, padx=8, pady=(5, 5), sticky=W)
+                    progress_close = Label(progress, text="!__You can close this window now__!", justify=LEFT)
+                    progress_close.grid(row=4, column=0, padx=8, pady=(5, 5), sticky=W)
+                    progress_donger = Label(progress, text="ლ ( ◕  ᗜ  ◕ ) ლ", justify=LEFT)
+                    progress_donger.grid(row=5, column=0, padx=8, pady=(5, 5), sticky=W)
                 else:
                     bru_level = Toplevel()
                     bru_level.title("Select object")
@@ -206,12 +229,35 @@ def download_click():
                         count += 1
                     
                     def single_click():
-                        # scraper.single_data(brus_found, driver[0])
-                        print(bru_select.get())
+                        count_loop = 1
+                        bru_selected = bru_select.get().rstrip()
+                        for bru in brus_found:
+                            if bru == bru_select.get():
+                                # TODO: add waiting window
+                                bru_level.destroy()
+
+                                single = scraper.single_data(driver[0], count_loop, bru_selected, selenium_options[3], selenium_options[1])
+                                
+                                progress = Toplevel()
+                                progress.title("Progress window")
+                                progress.iconbitmap(ico_path)
+                                progress_text = "(" + str(count_loop) + "/" + str(len(brus_found)) + "): " + "From " + str(selenium_options[4]) + " and object " + str(bru_select.get().rstrip()) + " there were " + str(len(brus_found)) + " files downloaded."
+                                progress_bru = Label(progress, text=progress_text, justify=LEFT)
+                                progress_bru.grid(row=1, column=0, padx=8, pady=(5, 5), sticky=W)
+                                progress_compl = Label(progress, text="Download has completed, see downloading time:", justify=LEFT)
+                                progress_compl.grid(row=2, column=0, padx=8, pady=(5, 5), sticky=W)
+                                progress_time = Label(progress, text=single, justify=LEFT)
+                                progress_time.grid(row=3, column=0, padx=8, pady=(5, 5), sticky=W)
+                                progress_close = Label(progress, text="!__You can close this window now__!", justify=LEFT)
+                                progress_close.grid(row=4, column=0, padx=8, pady=(5, 5), sticky=W)
+                                progress_donger = Label(progress, text="ლ ( ◕  ᗜ  ◕ ) ლ", justify=LEFT)
+                                progress_donger.grid(row=5, column=0, padx=8, pady=(5, 5), sticky=W)
+
+                            else:
+                                count_loop += 1
 
                     single_btn = Button(bru_level, text="CONFIRM", command=single_click, padx=10, pady=5)
                     single_btn.grid(row=len(brus_found)+2, column=0, columnspan=3, pady=(4, 10))
-
 
 
         # close interface when ready

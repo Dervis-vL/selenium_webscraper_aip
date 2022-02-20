@@ -1,5 +1,7 @@
 # import packages
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -43,15 +45,10 @@ If the version differs from the default version used by this tool, than download
 https://chromedriver.chromium.org/downloads
 """
 
-def input_scraper(batchnum, dest):
+def input_scraper(batch, folder):
 
     # start timing
     start_time = datetime.now()
-
-    # ask for login as input and batch number
-    batch = batchnum
-    folder = dest
-    driver_url = "https://aip.amsterdam.nl"
 
     # ad a zero in front of the first 9 numbers to prevent an accidental hit with it's tenfold
     if len(batch) < 2:
@@ -67,8 +64,10 @@ def input_scraper(batchnum, dest):
     today = date.today()
     d = today.strftime("%d-%m-%y")  
 
+    # create a folder and variable with the path to the batch directory
     batch_name = batch_name + "_v" + str(dupl) + "_" + str(d)
-    path = os.path.join(folder, batch_name)
+    path = os.path.join(folder, batch_name).replace("/", "\\")
+    os.makedirs(path)
 
     # set chrome options
     chrome_options = webdriver.ChromeOptions()
@@ -78,14 +77,15 @@ def input_scraper(batchnum, dest):
     chrome_options.add_argument('--disable-gpu')
     # chrome_options.add_argument('--start-maximized')
     chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+
     # add directory preference
     prefs = {}
-    os.makedirs(path)
     prefs["profile.default_content_settings.popups"]=0
     prefs["download.default_directory"]=path
     chrome_options.add_experimental_option("prefs", prefs)
+    print(path)
 
-    return chrome_options, driver_url, start_time, batch
+    return chrome_options, start_time, batch, path, batch_name
 
 def version_find(chrome_options):
     # VERSION control
@@ -156,7 +156,8 @@ def find_by_xpath(elem_xpath, webdriver):
 def find_by_class_name(elem_class_name, webdriver):
     # explicit wait
     try:
-        WebDriverWait(webdriver, 30).until(
+        ignore_exceptions = (NoSuchElementException, StaleElementReferenceException, )
+        WebDriverWait(webdriver, 30, ignored_exceptions=ignore_exceptions).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, elem_class_name))
         )
     except:
@@ -220,7 +221,7 @@ def login(username, password, driver, batchnum):
     return regex_tables
 
 # function to loop through all bru's and collect data
-def all_data(regex_tables, driver):
+def all_data(regex_tables, driver, path, batch_name):
     count = 1
     for bru in regex_tables:
         # remove whitespace
@@ -267,11 +268,11 @@ def all_data(regex_tables, driver):
             # get file
             driver.get(total_link)
 
-        # wait till downloads ready
-        download_check = os.listdir(path)
-        while any(".crdownload" in file for file in download_check):
-            sleep(1)
+            # wait till downloads ready
             download_check = os.listdir(path)
+            while any(".crdownload" in file for file in download_check):
+                sleep(1)
+                download_check = os.listdir(path)
         
         # move all files to bru specific directory
         move_list = os.listdir(path)
@@ -315,41 +316,18 @@ def all_data(regex_tables, driver):
     # wait till downloads ready
     download_check = os.listdir(path)
     
+    # TODO: add check for file length
     while any(".crdownload" in file for file in download_check):
         sleep(1)
         download_check = os.listdir(path)
 
-    return
+    end_time = datetime.now() - start_time
+
+    return end_time
 
 
 # function to get single bru from aip site
-def single_data(regex_tables, driver):
-    count = 1
-    for bru in regex_tables:
-        # remove whitespace
-        bru = bru.rstrip()
-
-        # print all bru's found for selection
-        sum_all_bru = str(count) + " :   " + str(bru)
-        print(sum_all_bru)
-        count += 1
-    
-    # get input that specifies wich bru to find
-    input_test = True
-    while input_test:
-        specific_bru = input("\nInput the integer number from list to select object: ")
-
-        try:
-            specific_bru = int(specific_bru)
-        except:
-            print("ERROR: Please input an integer value. An integer is a whole number without decimals.\n")
-
-        # check input
-        if isinstance(specific_bru, int):
-            input_test = False
-        else:
-            print("\nInput is not recognized, specify the number from the object as listed above.")
-
+def single_data(driver, specific_bru, bru, path, start_time):
     # go to specific bru info page
     bru_info_tag = "//tbody/tr[" + str(specific_bru) + "]/td[1]"
     bru_data = find_by_xpath(bru_info_tag, driver)
@@ -392,11 +370,13 @@ def single_data(regex_tables, driver):
         # get file
         driver.get(total_link)
 
-    # wait till downloads ready
-    download_check = os.listdir(path)
-    while any(".crdownload" in file for file in download_check):
-        sleep(1)
+        # TODO: check pathlength
+
+        # wait till downloads ready
         download_check = os.listdir(path)
+        while any(".crdownload" in file for file in download_check):
+            sleep(1)
+            download_check = os.listdir(path)
         
     # move all files to bru specific directory
     move_list = os.listdir(path)
@@ -408,56 +388,67 @@ def single_data(regex_tables, driver):
             else:
                 shutil.move(fpath, path_bru)
 
-    #close window_dms
-    driver.close()
+    # close window_dms
+    # driver.quit()
 
-    #assign window_one
-    driver.switch_to.window(window_one)
+    end_time = datetime.now() - start_time
 
-    #go back one
-    driver.back()
-
-    # print update on download progress
-    print("(" + str(specific_bru) + "/" + str(len(regex_tables)) + "): " + "From " + str(batch_name) + " and object " + str(bru) + " there where " + str(len(regex_hyperlinks)) + " files downloaded.")
-
-    return 
-
-
-    # make selection for complete bru download or single bru selection
-    if single_download == False:
-        all_data(regex_tables, driver)
-    elif single_download == True:
-        single_data(regex_tables, driver)
-
-    # delete user login data
-    del user
-    del password
-    print("\nDownloading has completed, see downloading time:")
-    print(datetime.now() - start_time)
-    print("\n!__you can close this terminal now__!\n")
-    print("ლ ( ◕  ᗜ  ◕ ) ლ\n")
-
-    # quit and shut down driver
-    driver.quit()
+    return end_time
 
 
 if __name__ == "__main__":
 
     # start scraper by giving input
+    url = "https://aip.amsterdam.nl"
     user = "h.p.j.h.p.m.kolen@iv-infra.nl"
     password = "7aB3E38rp!"
     batch = "19"
     folder = r"C:\programming\test_area"
 
-    selenium_options = input_scraper(user, password, batch, folder, True)
+    selenium_options = input_scraper(batch, folder)
 
     driver = version_find(selenium_options[0])
 
     if driver[1] == False:
         print("Your version of chrome is not found. Contact developer.")
     else:
-        driver[0].get(selenium_options[1])
-    
+        driver[0].get(url)
+
+        brus_found = login(user, password, driver[0], selenium_options[2])
+
+        if len(brus_found) == 0:
+            print("Oops, loading objects failed. Try again.")
+            driver[0].quit()
+            exit()
+        else:
+            count = 1
+            for bru in brus_found:
+                # remove whitespace
+                bru = bru.rstrip()
+
+                # print all bru's found for selection
+                sum_all_bru = str(count) + " :   " + str(bru)
+                print(sum_all_bru)
+                count += 1
+            
+            # get input that specifies which bru to find
+            input_test = True
+            while input_test:
+                specific_bru = input("\nInput the integer number from list to select object: ")
+
+                try:
+                    specific_bru = int(specific_bru)
+                except:
+                    print("ERROR: Please input an integer value. An integer is a whole number without decimals.\n")
+
+                # check input
+                if isinstance(specific_bru, int):
+                    input_test = False
+                else:
+                    print("\nInput is not recognized, specify the number from the object as listed above.")
+
+            single_data(brus_found, driver[0], specific_bru, bru)
+            
         sleep(6)
 
         driver[0].quit()

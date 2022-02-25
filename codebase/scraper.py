@@ -10,6 +10,8 @@ from selenium.webdriver.chrome.service import Service
 from time import sleep
 from datetime import datetime, date
 import re, os, shutil, sys
+
+# TODO: add start as admin function
 # import win32com.shell.shell as shell
 # ASADMIN = 'asadmin'
 
@@ -46,7 +48,6 @@ https://chromedriver.chromium.org/downloads
 """
 
 def input_scraper(batch, folder):
-
     # start timing
     start_time = datetime.now()
 
@@ -73,9 +74,9 @@ def input_scraper(batch, folder):
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--window-size=1366,768')
-    # chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
-    # chrome_options.add_argument('--start-maximized')
+    chrome_options.add_argument('--start-maximized')
     chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
     # add directory preference
@@ -87,6 +88,7 @@ def input_scraper(batch, folder):
 
     return chrome_options, start_time, batch, path, batch_name
 
+# TODO: Add webdriver_manager for automatic chromedriver update 
 def version_find(chrome_options):
     # VERSION control
     # connect to driver with selenium and check version
@@ -130,7 +132,8 @@ def version_find(chrome_options):
 def find_by_id(elem_id, webdriver):
     # explicit wait for browser to load
     try:
-        WebDriverWait(webdriver, 30).until(
+        ignore_exceptions = (NoSuchElementException, StaleElementReferenceException, )
+        WebDriverWait(webdriver, 30, ignored_exceptions=ignore_exceptions).until(
             EC.presence_of_all_elements_located((By.ID, elem_id))
         )
     except:
@@ -140,9 +143,11 @@ def find_by_id(elem_id, webdriver):
 
     return find_id
 
+
 def find_by_xpath(elem_xpath, webdriver):
     try:
-        WebDriverWait(webdriver, 30).until(
+        ignore_exceptions = (NoSuchElementException, StaleElementReferenceException, )
+        WebDriverWait(webdriver, 30, ignored_exceptions=ignore_exceptions).until(
             EC.presence_of_all_elements_located((By.XPATH, elem_xpath))
         )
     except:
@@ -152,6 +157,7 @@ def find_by_xpath(elem_xpath, webdriver):
     find_xpath = webdriver.find_element(By.XPATH, elem_xpath)
 
     return find_xpath
+
 
 def find_by_class_name(elem_class_name, webdriver):
     # explicit wait
@@ -168,16 +174,18 @@ def find_by_class_name(elem_class_name, webdriver):
 
     return find_class_name
 
+
 def wait_for_class_name(elem_class_name, webdriver):
     # explicit wait
     try:
-        WebDriverWait(webdriver, 30).until(
+        ignore_exceptions = (NoSuchElementException, StaleElementReferenceException, )
+        WebDriverWait(webdriver, 30, ignored_exceptions=ignore_exceptions).until(
             EC.presence_of_element_located((By.CLASS_NAME, elem_class_name))
         )
     except:
         print("ERROR: Either loading time is taking longer than expected or class name not found")
 
-
+# function to login and navigate to batch with bru content
 def login(username, password, driver, batchnum):
     ## Tie together
     # login tags for ID element find
@@ -211,6 +219,7 @@ def login(username, password, driver, batchnum):
     batch_info_navigate = find_by_class_name(batch_info_tag, driver)
     batch_info_navigate.click()
 
+    # TODO: fix bug; the class name is not found. Find proper solution where code runs when full table is loaded
     # collect bru's
     bru_table_tag = 'table table-condensed table-hover'
     html_regex_bru = 'tr class="bg-white" style="cursor: default;"><td class="" style="cursor: pointer;">(.*?)</td'
@@ -220,6 +229,7 @@ def login(username, password, driver, batchnum):
 
     return regex_tables
 
+# TODO: add start_time
 # function to loop through all bru's and collect data
 def all_data(regex_tables, driver, path, batch_name):
     count = 1
@@ -268,6 +278,7 @@ def all_data(regex_tables, driver, path, batch_name):
             # get file
             driver.get(total_link)
 
+            # TODO: add check for path length
             # wait till downloads ready
             download_check = os.listdir(path)
             while any(".crdownload" in file for file in download_check):
@@ -293,10 +304,12 @@ def all_data(regex_tables, driver, path, batch_name):
         # go back one
         driver.back()
 
+        # TODO: find a way to create a progressbar in GUI
         # print update on download progress
         print("(" + str(count) + "/" + str(len(regex_tables)) + "): " + "From " + str(batch_name) + " and object " + str(bru) + " there where " + str(len(regex_hyperlinks)) + " files downloaded.")
         count += 1
-        
+    
+    # TODO: remove sleep() and create propper solution for wait
     #download 'Excel report'
     sleep(2)
     # fetch page html content and find all hyperlinks with regex
@@ -316,10 +329,10 @@ def all_data(regex_tables, driver, path, batch_name):
     # wait till downloads ready
     download_check = os.listdir(path)
     
-    # TODO: add check for file length
-    while any(".crdownload" in file for file in download_check):
-        sleep(1)
-        download_check = os.listdir(path)
+    # # TODO: add check for file length
+    # while any(".crdownload" in file for file in download_check):
+    #     sleep(1)
+    #     download_check = os.listdir(path)
 
     end_time = datetime.now() - start_time
 
@@ -371,7 +384,6 @@ def single_data(driver, specific_bru, bru, path, start_time):
         driver.get(total_link)
 
         # TODO: check pathlength
-
         # wait till downloads ready
         download_check = os.listdir(path)
         while any(".crdownload" in file for file in download_check):

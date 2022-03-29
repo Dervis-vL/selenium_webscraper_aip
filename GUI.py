@@ -1,18 +1,15 @@
-from datetime import datetime
-from email import message
 from tkinter import *
 from tkinter import font
 from tkinter import messagebox
 from tkinter import filedialog
-from turtle import width
 from PIL import ImageTk, Image
 from PIL import ImageTk, Image
+from matplotlib.pyplot import box
 from codebase import scraper
 
-# TODO: remove after testing/debugging
-name_test = "h.p.j.h.p.m.kolen@iv-infra.nl"
-pass_test = "7aB3E38rp!"
-
+# run as admin
+ADMIN = True
+scraper.admin(ADMIN)
 
 # set root window image and icon
 ico_path = r"design\iv_plain_3.ico"
@@ -97,6 +94,12 @@ def dialog_box():
     dest_entry.insert(0, root.folder)
     dest_entry.config(fg='black')
 
+# # TODO: add a check for direct_login input from login folder. 
+# try:
+#     get direct login and add to entry box
+# except:
+#     ask for login 
+
 # Entry boxes with label
 user_entry = Entry(frame_one, width=52)
 user_entry.grid(row=0, column=1, padx=20, pady=(10, 0))
@@ -137,7 +140,7 @@ dest_label.grid(row=1, column=0, pady=(10, 10), sticky=E)
 # options for radio nutton
 all_download = ["Whole batch", "Single object"]
 
-# radio button
+# radio button for download type
 action = IntVar()
 
 radio_1 = Radiobutton(frame_three, text=all_download[0], variable=action, value=1)
@@ -196,7 +199,7 @@ def download_click():
                 driver[0].quit()
             else:
                 if download == 1:
-                    total = scraper.all_data(brus_found, driver[0], selenium_options[3], selenium_options[4])
+                    total = scraper.all_data(brus_found, driver[0], selenium_options[3], selenium_options[4], selenium_options[1])
                     
                     progress = Toplevel()
                     progress.title("Progress window")
@@ -241,12 +244,12 @@ def download_click():
                                 progress = Toplevel()
                                 progress.title("Progress window")
                                 progress.iconbitmap(ico_path)
-                                progress_text = "(" + str(count_loop) + "/" + str(len(brus_found)) + "): " + "From " + str(selenium_options[4]) + " and object " + str(bru_select.get().rstrip()) + " there were " + str(len(brus_found)) + " files downloaded."
+                                progress_text = "(" + str(count_loop) + "/" + str(len(brus_found)) + "): " + "From " + str(selenium_options[4]) + " and object " + str(bru_select.get().rstrip()) + " there were " + str(single[1]) + " files downloaded."
                                 progress_bru = Label(progress, text=progress_text, justify=LEFT)
                                 progress_bru.grid(row=1, column=0, padx=8, pady=(5, 5), sticky=W)
                                 progress_compl = Label(progress, text="Download has completed, see downloading time:", justify=LEFT)
                                 progress_compl.grid(row=2, column=0, padx=8, pady=(5, 5), sticky=W)
-                                progress_time = Label(progress, text=single, justify=LEFT)
+                                progress_time = Label(progress, text=single[0], justify=LEFT)
                                 progress_time.grid(row=3, column=0, padx=8, pady=(5, 5), sticky=W)
                                 progress_close = Label(progress, text="!__You can close this window now__!", justify=LEFT)
                                 progress_close.grid(row=4, column=0, padx=8, pady=(5, 5), sticky=W)
@@ -267,6 +270,6 @@ def download_click():
 dest_btn = Button(root, text="Select destination", command=dialog_box, borderwidth=3)
 dest_btn.grid(row=3, column=0, columnspan=3, pady=(0, 15))
 download_btn = Button(root, text="DOWNLOAD", command=download_click, padx=10, pady=5)
-download_btn.grid(row=5, column=0, columnspan=3, pady=(0, 10))
+download_btn.grid(row=6, column=0, columnspan=3, pady=(0, 10))
 
 root.mainloop()

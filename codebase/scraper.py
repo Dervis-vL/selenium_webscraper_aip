@@ -1,4 +1,5 @@
 # import packages
+from http.server import executable
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
@@ -7,18 +8,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from time import sleep
 from datetime import datetime, date
 import re, os, shutil, sys
+import win32com.shell.shell as shell
 
-# TODO: add start as admin function
-# import win32com.shell.shell as shell
-# ASADMIN = 'asadmin'
-
-# if sys.argv[-1] != ASADMIN:
-#     script = os.path.abspath(sys.argv[0])
-#     params = ' '.join([script] + sys.argv[1:] + [ASADMIN])
-#     shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters=params)
 
 # DOCSTRING
 """
@@ -46,6 +41,18 @@ Check your browser version: 'help' -->  'About Google Chrome'
 If the version differs from the default version used by this tool, than download the driver for the verion used by your machine here:
 https://chromedriver.chromium.org/downloads
 """
+
+# run tool as admin
+def admin(admin_input):
+    pass
+    # if admin_input == True:    
+    #     ASADMIN = 'asadmin'
+
+    #     if sys.argv[-1] != ASADMIN:
+    #         script = os.path.abspath(sys.argv[0])
+    #         params = ' '.join([script] + sys.argv[1:] + [ASADMIN])
+    #         shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters=params)
+    #         sys.exit()
 
 def input_scraper(batch, folder):
     # start timing
@@ -77,6 +84,7 @@ def input_scraper(batch, folder):
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--start-maximized')
+    # chrome_options.add_argument(f'user-data-dir={path}\\User Data\\profile')
     chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
     # add directory preference
@@ -84,48 +92,18 @@ def input_scraper(batch, folder):
     prefs["profile.default_content_settings.popups"]=0
     prefs["download.default_directory"]=path
     chrome_options.add_experimental_option("prefs", prefs)
-    print(path)
 
     return chrome_options, start_time, batch, path, batch_name
 
-# TODO: Add webdriver_manager for automatic chromedriver update 
+
+# webdriver_manager for automatic chromedriver update 
 def version_find(chrome_options):
-    # VERSION control
-    # connect to driver with selenium and check version
-    try:
-        PATH = Service('drivers//chromedriver_94.exe')
-        driver = webdriver.Chrome(service=PATH, options=chrome_options)
-        version = True
-    except:
-        try:
-            PATH = Service('drivers//chromedriver_95.exe')
-            driver = webdriver.Chrome(service=PATH, options=chrome_options)
-            version = True
-        except:
-            try:
-                PATH = Service('drivers//chromedriver_96.exe')
-                driver = webdriver.Chrome(service=PATH, options=chrome_options)
-                version = True
-            except:
-                try:
-                    PATH = Service('drivers//chromedriver_97.exe')
-                    driver = webdriver.Chrome(service=PATH, options=chrome_options)
-                    version = True
-                except:
-                    try:
-                        PATH = Service('drivers//chromedriver_98.exe')
-                        driver = webdriver.Chrome(service=PATH, options=chrome_options)
-                        version = True
-                    except:
-                        try:
-                            PATH = Service('drivers//chromedriver_99.exe')
-                            driver = webdriver.Chrome(service=PATH, options=chrome_options)
-                            version = True
-                        except:
-                            driver = "error"
-                            version = False
-                            
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    version = True
+
     return driver, version
+
 
 ## functions
 # find an element by id
@@ -179,12 +157,12 @@ def wait_for_class_name(elem_class_name, webdriver):
     # explicit wait
     try:
         ignore_exceptions = (NoSuchElementException, StaleElementReferenceException, )
-        WebDriverWait(webdriver, 30, ignored_exceptions=ignore_exceptions).until(
+        WebDriverWait(webdriver, 16, ignored_exceptions=ignore_exceptions).until(
             EC.presence_of_element_located((By.CLASS_NAME, elem_class_name))
         )
     except:
-        print("ERROR: Either loading time is taking longer than expected or class name not found")
-
+        print("test failed")
+    
 # function to login and navigate to batch with bru content
 def login(username, password, driver, batchnum):
     ## Tie together
@@ -221,17 +199,18 @@ def login(username, password, driver, batchnum):
 
     # TODO: fix bug; the class name is not found. Find proper solution where code runs when full table is loaded
     # collect bru's
-    bru_table_tag = 'table table-condensed table-hover'
+    # bru_table_tag = 'table table-condensed table-hover'
     html_regex_bru = 'tr class="bg-white" style="cursor: default;"><td class="" style="cursor: pointer;">(.*?)</td'
-    wait_for_class_name(bru_table_tag, driver)
+    # wait_for_class_name(bru_table_tag, driver)
+    sleep(20)
     html_content_page = driver.page_source
     regex_tables = re.findall(html_regex_bru, str(html_content_page))
 
     return regex_tables
 
-# TODO: add start_time
+
 # function to loop through all bru's and collect data
-def all_data(regex_tables, driver, path, batch_name):
+def all_data(regex_tables, driver, path, batch_name, start_time):
     count = 1
     for bru in regex_tables:
         # remove whitespace
@@ -269,6 +248,10 @@ def all_data(regex_tables, driver, path, batch_name):
         # make folder for each bru in batch directory
         path_bru = os.path.join(path, bru)
         os.mkdir(path_bru)
+
+        # TODO: add excel download from DMS
+
+        # TODO: add count for files downloaded
 
         # download all data
         for file in regex_hyperlinks:
@@ -334,9 +317,12 @@ def all_data(regex_tables, driver, path, batch_name):
     #     sleep(1)
     #     download_check = os.listdir(path)
 
+    # close driver
+    driver.quit()
+
     end_time = datetime.now() - start_time
 
-    return end_time
+    return end_time, count
 
 
 # function to get single bru from aip site
@@ -364,7 +350,7 @@ def single_data(driver, specific_bru, bru, path, start_time):
     select_all.click()
 
     #TODO: remove sleep() and make a better solution
-    sleep(3)
+    sleep(10)
 
     # fetch page html content and find all hyperlinks with regex
     html_content = driver.page_source
@@ -375,7 +361,13 @@ def single_data(driver, specific_bru, bru, path, start_time):
     path_bru = os.path.join(path, bru)
     os.mkdir(path_bru)
 
+    # download Excel with class = "buttons-excel" from dms
+    dms_excel_tag = 'buttons-excel'
+    dms_excel = find_by_class_name(dms_excel_tag, driver)
+    dms_excel.click()
+
     # download all data
+    count = 1
     for file in regex_hyperlinks:
         base = "https://bmidms.amsterdam.nl/documents/download/document/"
         total_link = os.path.join(base, file) 
@@ -389,6 +381,9 @@ def single_data(driver, specific_bru, bru, path, start_time):
         while any(".crdownload" in file for file in download_check):
             sleep(1)
             download_check = os.listdir(path)
+        count += 1
+    
+    sleep(5)
         
     # move all files to bru specific directory
     move_list = os.listdir(path)
@@ -401,15 +396,21 @@ def single_data(driver, specific_bru, bru, path, start_time):
                 shutil.move(fpath, path_bru)
 
     # close window_dms
-    # driver.quit()
+    driver.quit()
 
     end_time = datetime.now() - start_time
 
-    return end_time
+    return end_time, count
 
 
+
+# TODO: Run without GUI
 if __name__ == "__main__":
+    # admin
+    admin_start = True
+    admin(admin_start)
 
+    # TODO: check login folder for login
     # start scraper by giving input
     url = "https://aip.amsterdam.nl"
     user = "h.p.j.h.p.m.kolen@iv-infra.nl"

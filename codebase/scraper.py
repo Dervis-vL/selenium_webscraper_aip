@@ -471,9 +471,9 @@ if __name__ == "__main__":
     # TODO: check login folder for login
     # start scraper by giving input
     url = "https://aip.amsterdam.nl"
-    user = "h.p.j.h.p.m.kolen@iv-infra.nl"
-    password = "7aB3E38rp!"
-    batch = "19"
+    user = ""
+    password = ""
+    batch = ""
     folder = r"C:\programming\test_area"
 
     selenium_options = input_scraper(batch, folder)

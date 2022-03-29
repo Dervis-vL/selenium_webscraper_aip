@@ -138,7 +138,7 @@ dest_label = Label(frame_two, text="Destination: ")
 dest_label.grid(row=1, column=0, pady=(10, 10), sticky=E)
 
 # options for radio nutton
-all_download = ["Whole batch", "Single object"]
+all_download = ["Whole batch", "Single object", "Assets in Excel"]
 
 # radio button for download type
 action = IntVar()
@@ -147,11 +147,12 @@ radio_1 = Radiobutton(frame_three, text=all_download[0], variable=action, value=
 radio_1.grid(row=0, column=0, sticky=W)
 radio_2 = Radiobutton(frame_three, text=all_download[1], variable=action, value=2)
 radio_2.grid(row=1, column=0, sticky=W)
+radio_3 = Radiobutton(frame_three, text=all_download[2], variable=action, value=3)
+radio_3.grid(row=2, column=0, sticky=W)
 
 # funcions for download button
 def download_click():
     ready = False
-
     # first check of input
     if "@" not in user_entry.get( ):
         messagebox.showwarning("Oops", "Incorrect e-mail adres")
@@ -160,7 +161,7 @@ def download_click():
     elif dest_entry.get() == "enter destination" or dest_entry.get() == "":
         messagebox.showwarning("Oops", "Incorrect path")
     elif action.get() == 0:
-        messagebox.showwarning("Oops", "Select full or single download option")
+        messagebox.showwarning("Oops", "Select full, single or asset download option")
     else:
         try:
             if int(batch_entry.get()) >= 999:
@@ -198,6 +199,7 @@ def download_click():
                 messagebox.showwarning("Oops", "Loading objects failed. Try again.")
                 driver[0].quit()
             else:
+                # download whole batch
                 if download == 1:
                     total = scraper.all_data(brus_found, driver[0], selenium_options[3], selenium_options[4], selenium_options[1])
                     
@@ -209,12 +211,16 @@ def download_click():
                     # progress_bru.grid(row=1, column=0, padx=8, pady=(5, 5), sticky=W)
                     progress_compl = Label(progress, text="Download has completed, see downloading time:", justify=LEFT)
                     progress_compl.grid(row=2, column=0, padx=8, pady=(5, 5), sticky=W)
-                    progress_time = Label(progress, text=total, justify=LEFT)
+                    progress_time = Label(progress, text=total[0], justify=LEFT)
                     progress_time.grid(row=3, column=0, padx=8, pady=(5, 5), sticky=W)
                     progress_close = Label(progress, text="!__You can close this window now__!", justify=LEFT)
                     progress_close.grid(row=4, column=0, padx=8, pady=(5, 5), sticky=W)
                     progress_donger = Label(progress, text="ლ ( ◕  ᗜ  ◕ ) ლ", justify=LEFT)
                     progress_donger.grid(row=5, column=0, padx=8, pady=(5, 5), sticky=W)
+                # TODO: download excel sheets only
+                elif download == 3:
+                    assets = scraper.all_data(brus_found, driver[0], selenium_options[3], selenium_options[1])
+                # download single object
                 else:
                     bru_level = Toplevel()
                     bru_level.title("Select object")

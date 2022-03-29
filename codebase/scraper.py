@@ -238,7 +238,7 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
         select_all.click()
 
         #TODO: remove sleep() and make a better solution
-        sleep(4)
+        sleep(10)
 
         # fetch page html content and find all hyperlinks with regex
         html_content = driver.page_source
@@ -249,10 +249,13 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
         path_bru = os.path.join(path, bru)
         os.mkdir(path_bru)
 
-        # TODO: add excel download from DMS
+        # add excel download from DMS
+        dms_excel_tag = 'buttons-excel'
+        dms_excel = find_by_class_name(dms_excel_tag, driver)
+        dms_excel.click()
 
-        # TODO: add count for files downloaded
-
+        # count for files downloaded
+        count = 1
         # download all data
         for file in regex_hyperlinks:
             base = "https://bmidms.amsterdam.nl/documents/download/document/"
@@ -267,7 +270,8 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
             while any(".crdownload" in file for file in download_check):
                 sleep(1)
                 download_check = os.listdir(path)
-        
+            count += 1
+
         # move all files to bru specific directory
         move_list = os.listdir(path)
         for files in move_list:
@@ -286,11 +290,11 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
 
         # go back one
         driver.back()
+        count += 1
 
         # TODO: find a way to create a progressbar in GUI
         # print update on download progress
-        print("(" + str(count) + "/" + str(len(regex_tables)) + "): " + "From " + str(batch_name) + " and object " + str(bru) + " there where " + str(len(regex_hyperlinks)) + " files downloaded.")
-        count += 1
+        print("(" + str(count) + "/" + str(len(regex_tables)) + "): " + "From " + str(batch_name) + " and object " + str(bru) + " there where " + str(count) + " files downloaded.")
     
     # TODO: remove sleep() and create propper solution for wait
     #download 'Excel report'
@@ -309,20 +313,12 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
     driver.get(total_link_excel)
     sleep(4)
 
-    # wait till downloads ready
-    download_check = os.listdir(path)
-    
-    # # TODO: add check for file length
-    # while any(".crdownload" in file for file in download_check):
-    #     sleep(1)
-    #     download_check = os.listdir(path)
-
     # close driver
     driver.quit()
 
     end_time = datetime.now() - start_time
 
-    return end_time, count
+    return end_time
 
 
 # function to get single bru from aip site
@@ -401,6 +397,68 @@ def single_data(driver, specific_bru, bru, path, start_time):
     end_time = datetime.now() - start_time
 
     return end_time, count
+
+
+# function to loop through all bru's and collect data
+def all_assets(regex_tables, driver, path, start_time):
+    count = 1
+    for bru in regex_tables:
+        # remove whitespace
+        bru = bru.rstrip()
+        # go to specific bru info page
+        bru_info_tag = "//tbody/tr[" + str(count) + "]/td[1]"
+        bru_data = find_by_xpath(bru_info_tag, driver)
+        bru_data.click()
+        
+        # assign one window
+        window_one = driver.window_handles[0]
+
+        # open DMS
+        dms_tag = "/html/body/span[1]/div[2]/div[1]/section[1]/header[1]/div[2]/a[1]"
+        find_dms = find_by_xpath(dms_tag, driver)
+        find_dms.click()
+
+        # assign and handle window two
+        window_dms = driver.window_handles[1]
+        driver.switch_to.window(window_dms)
+
+        # make folder for each bru in batch directory
+        path_bru = os.path.join(path, bru)
+        os.mkdir(path_bru)
+
+        # add excel download from DMS
+        dms_excel_tag = 'buttons-excel'
+        dms_excel = find_by_class_name(dms_excel_tag, driver)
+        dms_excel.click()
+
+        sleep(3)
+
+        # move all files to bru specific directory
+        move_list = os.listdir(path)
+        for files in move_list:
+            fpath = os.path.join(path, files)
+            if not os.path.isdir(fpath):
+                if fpath.endswith(".tmp"):
+                    pass
+                else:
+                    shutil.move(fpath, path_bru)
+
+        #close window_dms
+        driver.close()
+
+        #assign window_one
+        driver.switch_to.window(window_one)
+
+        # go back one
+        driver.back()
+        count += 1
+
+    # close driver
+    driver.quit()
+
+    end_time = datetime.now() - start_time
+
+    return end_time
 
 
 

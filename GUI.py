@@ -200,6 +200,7 @@ def download_click():
                 driver[0].quit()
             else:
                 # download whole batch
+                print(download)
                 if download == 1:
                     total = scraper.all_data(brus_found, driver[0], selenium_options[3], selenium_options[4], selenium_options[1])
                     
@@ -219,7 +220,7 @@ def download_click():
                     progress_donger.grid(row=5, column=0, padx=8, pady=(5, 5), sticky=W)
                 # TODO: download excel sheets only
                 elif download == 3:
-                    assets = scraper.all_data(brus_found, driver[0], selenium_options[3], selenium_options[1])
+                    scraper.all_assets(brus_found, driver[0], selenium_options[3], selenium_options[1])
                 # download single object
                 else:
                     bru_level = Toplevel()

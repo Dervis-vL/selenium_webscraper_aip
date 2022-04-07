@@ -44,15 +44,15 @@ https://chromedriver.chromium.org/downloads
 
 # run tool as admin
 def admin(admin_input):
-    pass
-    # if admin_input == True:    
-    #     ASADMIN = 'asadmin'
+    # pass
+    if admin_input == True:    
+        ASADMIN = 'asadmin'
 
-    #     if sys.argv[-1] != ASADMIN:
-    #         script = os.path.abspath(sys.argv[0])
-    #         params = ' '.join([script] + sys.argv[1:] + [ASADMIN])
-    #         shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters=params)
-    #         sys.exit()
+        if sys.argv[-1] != ASADMIN:
+            script = os.path.abspath(sys.argv[0])
+            params = ' '.join([script] + sys.argv[1:] + [ASADMIN])
+            shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters=params)
+            sys.exit()
 
 def input_scraper(batch, folder):
     # start timing
@@ -84,7 +84,6 @@ def input_scraper(batch, folder):
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--start-maximized')
-    # chrome_options.add_argument(f'user-data-dir={path}\\User Data\\profile')
     chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
     # add directory preference
@@ -98,9 +97,47 @@ def input_scraper(batch, folder):
 
 # webdriver_manager for automatic chromedriver update 
 def version_find(chrome_options):
-
+    # try:
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     version = True
+    # except:
+        # The exception is a poor shortterm solution due to company policy
+        # try:
+            # PATH = Service('drivers//chromedriver_94.exe')
+            # driver = webdriver.Chrome(service=PATH, options=chrome_options)
+            # version = True
+        # except:
+        #     try:
+        #         PATH = Service('drivers//chromedriver_95.exe')
+        #         driver = webdriver.Chrome(service=PATH, options=chrome_options)
+        #         version = True
+        #     except:
+        #         try:
+        #             PATH = Service('drivers//chromedriver_96.exe')
+        #             driver = webdriver.Chrome(service=PATH, options=chrome_options)
+        #             version = True
+        #         except:
+        #             try:
+        #                 PATH = Service('drivers//chromedriver_97.exe')
+        #                 driver = webdriver.Chrome(service=PATH, options=chrome_options)
+        #                 version = True
+        #             except:
+        #                 try:
+        #                     PATH = Service('drivers//chromedriver_98.exe')
+        #                     driver = webdriver.Chrome(service=PATH, options=chrome_options)
+        #                     version = True
+        #                 except:
+        #                     try:
+        #                         PATH = Service('drivers//chromedriver_99.exe')
+        #                         driver = webdriver.Chrome(service=PATH, options=chrome_options)
+        #                         version = True
+        #                     except:
+        #                         try:
+        #                             PATH = Service('drivers//chromedriver_100.exe')
+        #                             driver = webdriver.Chrome(service=PATH, options=chrome_options)
+        #                             version = True
+        #                         except:
+        #                             print("Your version of chrome is not found. Contact developer.")
 
     return driver, version
 

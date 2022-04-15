@@ -44,15 +44,15 @@ https://chromedriver.chromium.org/downloads
 
 # run tool as admin
 def admin(admin_input):
-    # pass
-    if admin_input == True:    
-        ASADMIN = 'asadmin'
+    pass
+    # if admin_input == True:    
+    #     ASADMIN = 'asadmin'
 
-        if sys.argv[-1] != ASADMIN:
-            script = os.path.abspath(sys.argv[0])
-            params = ' '.join([script] + sys.argv[1:] + [ASADMIN])
-            shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters=params)
-            sys.exit()
+    #     if sys.argv[-1] != ASADMIN:
+    #         script = os.path.abspath(sys.argv[0])
+    #         params = ' '.join([script] + sys.argv[1:] + [ASADMIN])
+    #         shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters=params)
+    #         sys.exit()
 
 def input_scraper(batch, folder):
     # start timing
@@ -81,7 +81,7 @@ def input_scraper(batch, folder):
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--window-size=1366,768')
-    chrome_options.add_argument('--headless')
+    # chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--start-maximized')
     chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
@@ -97,47 +97,21 @@ def input_scraper(batch, folder):
 
 # webdriver_manager for automatic chromedriver update 
 def version_find(chrome_options):
-    # try:
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    version = True
-    # except:
-        # The exception is a poor shortterm solution due to company policy
-        # try:
-            # PATH = Service('drivers//chromedriver_94.exe')
-            # driver = webdriver.Chrome(service=PATH, options=chrome_options)
-            # version = True
-        # except:
-        #     try:
-        #         PATH = Service('drivers//chromedriver_95.exe')
-        #         driver = webdriver.Chrome(service=PATH, options=chrome_options)
-        #         version = True
-        #     except:
-        #         try:
-        #             PATH = Service('drivers//chromedriver_96.exe')
-        #             driver = webdriver.Chrome(service=PATH, options=chrome_options)
-        #             version = True
-        #         except:
-        #             try:
-        #                 PATH = Service('drivers//chromedriver_97.exe')
-        #                 driver = webdriver.Chrome(service=PATH, options=chrome_options)
-        #                 version = True
-        #             except:
-        #                 try:
-        #                     PATH = Service('drivers//chromedriver_98.exe')
-        #                     driver = webdriver.Chrome(service=PATH, options=chrome_options)
-        #                     version = True
-        #                 except:
-        #                     try:
-        #                         PATH = Service('drivers//chromedriver_99.exe')
-        #                         driver = webdriver.Chrome(service=PATH, options=chrome_options)
-        #                         version = True
-        #                     except:
-        #                         try:
-        #                             PATH = Service('drivers//chromedriver_100.exe')
-        #                             driver = webdriver.Chrome(service=PATH, options=chrome_options)
-        #                             version = True
-        #                         except:
-        #                             print("Your version of chrome is not found. Contact developer.")
+    try:
+        PATH = Service('drivers//chromedriver_100.exe')
+        driver = webdriver.Chrome(service=PATH, options=chrome_options)
+        version = True
+    except:
+        try:
+            PATH = Service('drivers//chromedriver_99.exe')
+            driver = webdriver.Chrome(service=PATH, options=chrome_options)
+            version = True
+        except:
+            try:
+                driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+                version = True
+            except:
+                print("Could not find or download a webdriver. \nPlease download manually.")
 
     return driver, version
 
@@ -148,7 +122,7 @@ def find_by_id(elem_id, webdriver):
     # explicit wait for browser to load
     try:
         ignore_exceptions = (NoSuchElementException, StaleElementReferenceException, )
-        WebDriverWait(webdriver, 30, ignored_exceptions=ignore_exceptions).until(
+        WebDriverWait(webdriver, 45, ignored_exceptions=ignore_exceptions).until(
             EC.presence_of_all_elements_located((By.ID, elem_id))
         )
     except:
@@ -162,7 +136,7 @@ def find_by_id(elem_id, webdriver):
 def find_by_xpath(elem_xpath, webdriver):
     try:
         ignore_exceptions = (NoSuchElementException, StaleElementReferenceException, )
-        WebDriverWait(webdriver, 30, ignored_exceptions=ignore_exceptions).until(
+        WebDriverWait(webdriver, 60, ignored_exceptions=ignore_exceptions).until(
             EC.presence_of_all_elements_located((By.XPATH, elem_xpath))
         )
     except:
@@ -178,7 +152,7 @@ def find_by_class_name(elem_class_name, webdriver):
     # explicit wait
     try:
         ignore_exceptions = (NoSuchElementException, StaleElementReferenceException, )
-        WebDriverWait(webdriver, 30, ignored_exceptions=ignore_exceptions).until(
+        WebDriverWait(webdriver, 45, ignored_exceptions=ignore_exceptions).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, elem_class_name))
         )
     except:
@@ -268,6 +242,9 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
         # assign and handle window two
         window_dms = driver.window_handles[1]
         driver.switch_to.window(window_dms)
+        
+        #TODO: remove sleep() and make a better solution
+        sleep(3)
 
         # show all files in table
         select_all_tag = '//select[@name="documents_length"]/option[text()="All"]'
@@ -275,7 +252,7 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
         select_all.click()
 
         #TODO: remove sleep() and make a better solution
-        sleep(10)
+        sleep(30)
 
         # fetch page html content and find all hyperlinks with regex
         html_content = driver.page_source
@@ -292,7 +269,7 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
         dms_excel.click()
 
         # count for files downloaded
-        count = 1
+        count_obj = 1
         # download all data
         for file in regex_hyperlinks:
             base = "https://bmidms.amsterdam.nl/documents/download/document/"
@@ -307,7 +284,7 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
             while any(".crdownload" in file for file in download_check):
                 sleep(1)
                 download_check = os.listdir(path)
-            count += 1
+            count_obj += 1
 
         # move all files to bru specific directory
         move_list = os.listdir(path)
@@ -331,11 +308,12 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
 
         # TODO: find a way to create a progressbar in GUI
         # print update on download progress
-        print("(" + str(count) + "/" + str(len(regex_tables)) + "): " + "From " + str(batch_name) + " and object " + str(bru) + " there where " + str(count) + " files downloaded.")
+        print("(" + str(count) + "/" + str(len(regex_tables)) + "): " + "From " + str(batch_name) + " and object " + str(bru) + " there where " + str(count_obj) + " files downloaded.")
     
     # TODO: remove sleep() and create propper solution for wait
     #download 'Excel report'
     sleep(2)
+
     # fetch page html content and find all hyperlinks with regex
     html_content_excel = driver.page_source
     regex_code_excel = '(?<=batches\/)(.*)(?=\/batchExcel)'
@@ -366,7 +344,7 @@ def single_data(driver, specific_bru, bru, path, start_time):
     bru_data.click()
         
     # assign one window
-    window_one = driver.window_handles[0]
+    driver.window_handles[0]
 
     # open DMS
     dms_tag = "/html/body/span[1]/div[2]/div[1]/section[1]/header[1]/div[2]/a[1]"
@@ -377,16 +355,38 @@ def single_data(driver, specific_bru, bru, path, start_time):
     window_dms = driver.window_handles[1]
     driver.switch_to.window(window_dms)
 
+    # TODO: remove sleep() and make a better solution
+    sleep(2)
+
     # show all files in table
     select_all_tag = '//select[@name="documents_length"]/option[text()="All"]'
     select_all = find_by_xpath(select_all_tag, driver)
     select_all.click()
 
-    #TODO: remove sleep() and make a better solution
-    sleep(10)
+    # #TODO: remove sleep() and make a better solution
+    # # better solution is checking total amount and amount found
+    sleep(30)
+    html_content = driver.page_source
+    # loading = True
+    # while loading:
+    #     files_loaded_regex = 'aria-live="polite">Showing 1 to (.*?) of'
+    #     files_need_regex = 'aria-live="polite">Showing 1 to (.*?) entries'
+    #     files_loaded = re.findall(files_loaded_regex, str(html_content))
+    #     files_need = re.findall(files_need_regex, str(html_content))
+
+    #     print(files_loaded)
+    #     print(files_need)
+
+    #     if len(files_loaded) == 0 or len(files_need) == 0:
+    #         pass 
+    #     elif int(files_need[0].split(' ')[2]) == int(files_loaded[0]):
+    #         loading = False
+    #         sleep(15))
+        
+    #     sleep(2)
+    #     html_content = driver.page_source
 
     # fetch page html content and find all hyperlinks with regex
-    html_content = driver.page_source
     regex_code = 'href="/documents/download/document/(.*?)"'
     regex_hyperlinks = re.findall(regex_code, str(html_content))
 
@@ -455,6 +455,9 @@ def all_assets(regex_tables, driver, path, start_time):
         find_dms = find_by_xpath(dms_tag, driver)
         find_dms.click()
 
+        # TODO: remove sleep and make a better solution
+        sleep(6)
+
         # assign and handle window two
         window_dms = driver.window_handles[1]
         driver.switch_to.window(window_dms)
@@ -462,6 +465,11 @@ def all_assets(regex_tables, driver, path, start_time):
         # make folder for each bru in batch directory
         path_bru = os.path.join(path, bru)
         os.mkdir(path_bru)
+
+        # show all files in table
+        select_all_tag = '//select[@name="documents_length"]/option[text()="All"]'
+        select_all = find_by_xpath(select_all_tag, driver)
+        select_all.click()
 
         # add excel download from DMS
         dms_excel_tag = 'buttons-excel'

@@ -6,6 +6,7 @@ from PIL import ImageTk, Image
 from PIL import ImageTk, Image
 from matplotlib.pyplot import box
 from codebase import scraper
+import re
 
 # run as admin
 ADMIN = True
@@ -95,15 +96,29 @@ def dialog_box():
     dest_entry.config(fg='black')
 
 # # TODO: add a check for direct_login input from login folder. 
-# try:
-#     get direct login and add to entry box
-# except:
-#     ask for login 
+login = open("login\\direct_login.txt", 'r')
+find = login.read()
+regex_tag_user = 'Username: "(.*?)"'
+regex_tag_pass = 'Password: "(.*?)"'
+username_regex = re.findall(regex_tag_user, str(find))
+password_regex = re.findall(regex_tag_pass, str(find))
+print(username_regex, password_regex)
+
+# Auto user input
+if len(username_regex[0]) > 1:
+    user_input = username_regex[0]
+else: 
+    user_input = "enter e-mail"
+
+if len(password_regex[0]) > 1:
+    pass_input = password_regex[0]
+else:
+    pass_input= "enter password"
 
 # Entry boxes with label
 user_entry = Entry(frame_one, width=52)
 user_entry.grid(row=0, column=1, padx=20, pady=(10, 0))
-user_entry.insert(0, "enter e-mail")
+user_entry.insert(0, user_input)
 user_entry.bind('<FocusIn>', on_entry_click_user)
 user_entry.bind('<FocusOut>', on_focusout_user)
 user_entry.config(fg="grey")
@@ -112,7 +127,7 @@ user_label.grid(row=0, column=0, pady=(10, 0), sticky=E)
 
 password_entry = Entry(frame_one, width=52, show="*")
 password_entry.grid(row=1, column=1, padx=20, pady=(10, 0))
-password_entry.insert(0, "enter password")
+password_entry.insert(0, pass_input)
 password_entry.bind('<FocusIn>', on_entry_click_password)
 password_entry.bind('<FocusOut>', on_focusout_password)
 password_entry.config(fg="grey")
@@ -200,7 +215,6 @@ def download_click():
                 driver[0].quit()
             else:
                 # download whole batch
-                print(download)
                 if download == 1:
                     total = scraper.all_data(brus_found, driver[0], selenium_options[3], selenium_options[4], selenium_options[1])
                     
@@ -212,7 +226,7 @@ def download_click():
                     # progress_bru.grid(row=1, column=0, padx=8, pady=(5, 5), sticky=W)
                     progress_compl = Label(progress, text="Download has completed, see downloading time:", justify=LEFT)
                     progress_compl.grid(row=2, column=0, padx=8, pady=(5, 5), sticky=W)
-                    progress_time = Label(progress, text=total[0], justify=LEFT)
+                    progress_time = Label(progress, text=total, justify=LEFT)
                     progress_time.grid(row=3, column=0, padx=8, pady=(5, 5), sticky=W)
                     progress_close = Label(progress, text="!__You can close this window now__!", justify=LEFT)
                     progress_close.grid(row=4, column=0, padx=8, pady=(5, 5), sticky=W)

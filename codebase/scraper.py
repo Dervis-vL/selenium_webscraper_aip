@@ -44,15 +44,14 @@ https://chromedriver.chromium.org/downloads
 
 # run tool as admin
 def admin(admin_input):
-    pass
-    # if admin_input == True:    
-    #     ASADMIN = 'asadmin'
+    if admin_input == True:    
+        ASADMIN = 'asadmin'
 
-    #     if sys.argv[-1] != ASADMIN:
-    #         script = os.path.abspath(sys.argv[0])
-    #         params = ' '.join([script] + sys.argv[1:] + [ASADMIN])
-    #         shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters=params)
-    #         sys.exit()
+        if sys.argv[-1] != ASADMIN:
+            script = os.path.abspath(sys.argv[0])
+            params = ' '.join([script] + sys.argv[1:] + [ASADMIN])
+            shell.ShellExecuteEx(lpVerb='runas', lpFile=sys.executable, lpParameters=params)
+            sys.exit()
 
 def input_scraper(batch, folder):
     # start timing

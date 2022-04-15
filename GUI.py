@@ -95,7 +95,7 @@ def dialog_box():
     dest_entry.insert(0, root.folder)
     dest_entry.config(fg='black')
 
-# # TODO: add a check for direct_login input from login folder. 
+# check for direct_login input from login folder. 
 login = open("login\\direct_login.txt", 'r')
 find = login.read()
 regex_tag_user = 'Username: "(.*?)"'
@@ -232,7 +232,7 @@ def download_click():
                     progress_close.grid(row=4, column=0, padx=8, pady=(5, 5), sticky=W)
                     progress_donger = Label(progress, text="ლ ( ◕  ᗜ  ◕ ) ლ", justify=LEFT)
                     progress_donger.grid(row=5, column=0, padx=8, pady=(5, 5), sticky=W)
-                # TODO: download excel sheets only
+                # download excel sheets only
                 elif download == 3:
                     scraper.all_assets(brus_found, driver[0], selenium_options[3], selenium_options[1])
                 # download single object

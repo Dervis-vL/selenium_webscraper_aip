@@ -110,7 +110,6 @@ regex_tag_user = 'username: "(.*?)"'
 regex_tag_pass = 'password: "(.*?)"'
 username_regex = re.findall(regex_tag_user, str(find))
 password_regex = re.findall(regex_tag_pass, str(find))
-print(username_regex, password_regex)
 
 # Auto user input
 if len(username_regex[0]) > 1:

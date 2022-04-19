@@ -6,7 +6,7 @@ from PIL import ImageTk, Image
 from PIL import ImageTk, Image
 from matplotlib.pyplot import box
 from codebase import scraper
-import re
+import re, os
 
 # run as admin
 ADMIN = True
@@ -95,11 +95,19 @@ def dialog_box():
     dest_entry.insert(0, root.folder)
     dest_entry.config(fg='black')
 
+# check if login exists
+filename = "./login/direct_login.txt"
+if not os.path.isfile(filename):
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as f:
+        f.write('username: ""\npassword: ""\n\n1. Never remove the quotation marks\n2. fill in username and password between the marks for auto-fill login')
+        f.close()
+
 # check for direct_login input from login folder. 
-login = open("login\\direct_login.txt", 'r')
+login = open(filename, 'r')
 find = login.read()
-regex_tag_user = 'Username: "(.*?)"'
-regex_tag_pass = 'Password: "(.*?)"'
+regex_tag_user = 'username: "(.*?)"'
+regex_tag_pass = 'password: "(.*?)"'
 username_regex = re.findall(regex_tag_user, str(find))
 password_regex = re.findall(regex_tag_pass, str(find))
 print(username_regex, password_regex)

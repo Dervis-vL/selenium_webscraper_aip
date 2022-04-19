@@ -33,8 +33,8 @@ If the version is not included to the versions mentioned bellow, add it to the d
 After your version of the chromedriver is added, change the 'if' statement in the code under
 the 'VERSION' comment.
 
-Default browser and version:    Chrome; versions 94 till 99
-Default driver:                 chromedriver.exe (for versions 94 till 99)
+Default browser and version:    Chrome; versions 94 till 100
+Default driver:                 chromedriver.exe (for versions 94 till 100)
 
 Check your browser version: 'help' -->  'About Google Chrome'
 

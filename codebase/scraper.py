@@ -284,6 +284,8 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
                 sleep(1)
                 download_check = os.listdir(path)
             count_obj += 1
+        
+        sleep(4)
 
         # move all files to bru specific directory
         move_list = os.listdir(path)

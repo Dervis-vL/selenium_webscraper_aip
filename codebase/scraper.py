@@ -97,20 +97,26 @@ def input_scraper(batch, folder):
 # webdriver_manager for automatic chromedriver update 
 def version_find(chrome_options):
     try:
-        PATH = Service('drivers//chromedriver_100.exe')
-        driver = webdriver.Chrome(service=PATH, options=chrome_options)
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
         version = True
     except:
-        try:
-            PATH = Service('drivers//chromedriver_99.exe')
-            driver = webdriver.Chrome(service=PATH, options=chrome_options)
-            version = True
-        except:
-            try:
-                driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-                version = True
-            except:
-                print("Could not find or download a webdriver. \nPlease download manually.")
+        print("Could not find or download a webdriver. \nPlease download manually.")
+
+    # try:
+    #     PATH = Service('drivers//chromedriver_103.exe')
+    #     driver = webdriver.Chrome(service=PATH, options=chrome_options)
+    #     version = True
+    # except:
+    #     try:
+    #         PATH = Service('drivers//chromedriver_102.exe')
+    #         driver = webdriver.Chrome(service=PATH, options=chrome_options)
+    #         version = True
+    #     except:
+    #         try:
+    #             driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    #             version = True
+    #         except:
+    #             print("Could not find or download a webdriver. \nPlease download manually.")
 
     return driver, version
 
@@ -285,7 +291,7 @@ def all_data(regex_tables, driver, path, batch_name, start_time):
                 download_check = os.listdir(path)
             count_obj += 1
         
-        sleep(4)
+        sleep(5)
 
         # move all files to bru specific directory
         move_list = os.listdir(path)

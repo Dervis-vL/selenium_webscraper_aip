@@ -21,3 +21,6 @@ Needless to say, REMOVE the 'login' folder completely before sharing the tool.
 
 Remarks, bugs or issues can be reported via:
 d.d.vanleersum@iv-infra.nl
+or
+the GitHub page under the issues page:
+https://github.com/Dervis-vL/selenium_webscraper_aip
